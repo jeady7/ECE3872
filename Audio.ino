@@ -1,5 +1,5 @@
 #include <Servo.h>
-int led=10;
+int led=12;
 int sensor=8;
 int motor1=10;
 int motor2=9;
@@ -21,8 +21,10 @@ int rest=0;
 int notes[]={C,rest,C,rest,C,rest,D,rest,E,rest,E,rest,D,rest,E,rest,F,rest,G,rest,high_C,rest,high_C,rest,high_C,rest,G,rest,G,rest,G,rest,E,rest,E,rest,E,rest,C,rest,C,rest,C,rest,G,rest,F,rest,E,rest,D,rest,C,rest};
 int s=100;
 
-int conductorMode = 1;  //Switch 
+int conductorMode = A2;  //Switch 
 int playerMode = 2;
+int playerState;
+int conductorState;
 
 const int AA=7; //LSB
 const int BB=6;
@@ -30,8 +32,9 @@ const int CC=5;
 const int DD=4; //MSB
 //octave buttons
 int oct_up = 11;
-int oct_down = 12;
-int select = 13;
+int oct_down = A4;
+int select = A5;
+int selectState;
 int reset = A0;
 
 int angle=0;
@@ -45,6 +48,9 @@ void setup() {
   pinMode(motor2,OUTPUT);
   pinMode(enable,OUTPUT);
   pinMode(speaker,OUTPUT);
+  pinMode(select,INPUT);
+  pinMode(oct_up,INPUT);
+  pinMode(oct_down,INPUT);
   pinMode(conductorMode, INPUT);
   pinMode(playerMode, INPUT);
   pinMode(AA, OUTPUT); //LSB
@@ -56,12 +62,15 @@ void setup() {
   Serial.begin(9600);
 }
 
-  void conductorsetup() {
-  if (select==1) {
+void conductorsetup() {
+  digitalWrite(led,HIGH);
+  selectState=digitalRead(select);
+  if (selectState==HIGH) {
   play();
   }
 }
-  void playersetup() {
+
+void playersetup() {
   /////Do audio analysis and set tempo and octave...
   play();
 }
@@ -81,10 +90,11 @@ void loop() {
   if (oct_down) {
     octive--;
   }
-  
-  if(playerMode == 1) {
+  playerState=digitalRead(playerMode);
+  conductorState=digitalRead(conductorMode);
+  if(playerState == HIGH) {
     playersetup();
-  } else if (conductorMode == 1) {
+  } else if (conductorState == HIGH) {
     conductorsetup();
   }
   
@@ -92,7 +102,6 @@ void loop() {
 
   void play() {
   tone(speaker,A,durations[2]*100);
-  digitalWrite(led,HIGH);
   digitalWrite(enable,200);
   digitalWrite(10,HIGH);
   digitalWrite(9,LOW);
@@ -111,6 +120,5 @@ void loop() {
       }
     noTone(speaker);
     digitalWrite(enable,0);
-    digitalWrite(led,LOW);
   }
   }
