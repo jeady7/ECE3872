@@ -35,7 +35,7 @@ int downstate;
 int select = A5;
 int selectState;
 float tempo;
-int Start1=2;int Start2=0;int Start3=0;int cursor1=0;int cursor2=0;int cursor3=0;
+int Start1=0;int Start2=0;int Start3=0; int Start4 = 0;int cursor1=0;int cursor2=0;int cursor3=0; int cursor4 = 0;
 int state = 0;
 int countPlays = 0;
 
@@ -88,7 +88,6 @@ void playersetup() {
       Start2=millis();
       Serial.println(Start2);
       state=2;
-      tempo=(Start2-Start1);
       Serial.println(tempo);
     }
     cursor1=cursor2;
@@ -98,21 +97,32 @@ void playersetup() {
     cursor3=millis();
     if (abs(cursor3-cursor2)>50){
       Start3=millis();
+      tempo = Start3-Start2;
       state=3;
     }
     cursor2=cursor3;
   }
 
-  if (state==3){
-    countPlays++;
-    for (int i=4; notes[i]!=-1;i++){
-        if (countPlays < 2) {
+  if (value==HIGH && state==3){
+    cursor4=millis();
+    if (abs(cursor4-cursor3)>50){
+      Start4=millis();
+      state=4;
+    }
+    cursor3=cursor4;
+  } 
+
+
+  if (state==4){
+    //countPlays++;
+    for (int i=6; notes[i]!=-1;i++){
+        if (digitalRead(conductorMode)) {
           break;
         }
         int duration=durations[i];
         tone(speaker,notes[i]*(2^octive),duration*tempo/2.8);
         delay(duration*0.95*tempo/2.8);
-        if (i==54){
+        if (i==52){
           break;
         }
   }
@@ -131,6 +141,8 @@ void loop() {
   (c==0) ? digitalWrite(CC, LOW): digitalWrite(CC, HIGH);
   (d==0) ? digitalWrite(DD, LOW): digitalWrite(DD, HIGH);
   upstate=digitalRead(oct_up);
+  Serial.print("Up button: ");
+  Serial.println(upstate);
   downstate=digitalRead(oct_down);
   if (upstate==LOW) {
     octive++;
